@@ -7,6 +7,7 @@ Vagrant.configure("2") do |config|
     ex01.vm.provision "ansible" do |ansible|
       ansible.playbook = "provisioning/site.yml"
       ansible.limit = "ex01"
+    ex01.vm.provider "virtualbox"
     end
   end
 
@@ -17,6 +18,7 @@ Vagrant.configure("2") do |config|
     ex02.vm.provision "ansible" do |ansible|
       ansible.playbook = "provisioning/site.yml"
       ansible.limit = "ex02"
+    ex02.vm.provider "virtualbox"
     end
   end
 
@@ -27,6 +29,7 @@ Vagrant.configure("2") do |config|
     ex03.vm.provision "ansible" do |ansible|
       ansible.playbook = "provisioning/site.yml"
       ansible.limit = "ex03"
+    ex03.vm.provider "virtualbox"
     end
   end
 
@@ -36,6 +39,7 @@ Vagrant.configure("2") do |config|
     ex04.vm.provision "ansible" do |ansible|
       ansible.playbook = "provisioning/site.yml"
       ansible.limit = "ex04"
+    ex04.vm.provider "virtualbox"
     end
   end
 end
