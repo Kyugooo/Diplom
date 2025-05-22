@@ -1,63 +1,54 @@
 ---
-- name: Configure Pentest VMs
+- name: Ensure access for vagrant and student
   hosts: all
   become: yes
   tasks:
-    - name: Create student user with sudo access
+    - name: Ensure vagrant user exists with known password
+      user:
+        name: vagrant
+        password: "{{ 'vagrant' | password_hash('sha512') }}"
+        groups: sudo
+        shell: /bin/bash
+        state: present
+
+    - name: Ensure .ssh directory exists for vagrant
+      file:
+        path: /home/vagrant/.ssh
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: '0700'
+
+    - name: Add insecure public key to vagrant user
+      copy:
+        dest: /home/vagrant/.ssh/authorized_keys
+        content: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA7QAAAQEAnzH77UjF8zD3aRqZx5cduMjb9Fz7EZUzZw1k4k3TWzXeHbhn8LgDZFv5ZWtOYjJToG8Z6z2TWZ4ovldJZPKNTdN3WkRACc4cNf0Z8iQdbKnU0h4KcGkV+H7omV3S0PuBaGJmQKlhJ5LzZrAvwl0tHewq8aElXrkZVxDFJYjOvQaxHEzOzV5EGk7qvTLdoHu3mIQQqhPaJ00tEN0hBRy3SRYMBLEwIDAQAB
+        owner: vagrant
+        group: vagrant
+        mode: '0600'
+
+    - name: Ensure student user exists with known password
       user:
         name: student
         password: "{{ 'startPentest' | password_hash('sha512') }}"
         groups: sudo
         shell: /bin/bash
-
-#    - name: Remove vagrant user
-#      user:
-#        name: vagrant
-#        state: absent
-
-    - name: Set hostname for each machine
-      hostname:
-        name: "{{ inventory_hostname }}"
-
-    - name: Ensure basic tools are installed
-      apt:
-        name:
-          - vim
-          - curl
-          - net-tools
-          - iputils-ping
-          - sudo
         state: present
-        update_cache: yes
 
-    - name: Copy SSH public key for student user (if exists)
-      authorized_key:
-        user: student
-        state: present
-        key: "{{ lookup('file', 'provisioning/keys/id_rsa_user4.pub') }}"
-      ignore_errors: yes
+    - name: Ensure password auth is enabled in SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
 
-    - name: Disable root SSH login
+    - name: Ensure PermitRootLogin is disabled
       lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^PermitRootLogin'
         line: 'PermitRootLogin no'
-        state: present
 
-    - name: Restart SSH to apply changes
+    - name: Restart SSH service
       service:
         name: ssh
         state: restarted
-# Time solution
-- name: Enable password authentication in SSH
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^PasswordAuthentication'
-    line: 'PasswordAuthentication yes'
-    state: present
-
-- name: Restart SSH to apply auth changes
-  service:
-    name: ssh
-    state: restarted
-

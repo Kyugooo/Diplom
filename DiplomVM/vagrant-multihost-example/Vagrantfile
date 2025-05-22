@@ -1,23 +1,15 @@
 Vagrant.configure("2") do |config|
+  config.ssh.insert_key = false
   config.vm.box = "debian/bookworm64"
 
-  config.vm.define "ex01" do |ex01|
-    ex01.vm.hostname = "ex01"
-    ex01.vm.network "private_network", ip: "192.168.56.101"
-  end
-
-  config.vm.define "ex02" do |ex02|
-    ex02.vm.hostname = "ex02"
-    ex02.vm.network "private_network", ip: "192.168.56.102"
-  end
-
-  config.vm.define "ex03" do |ex03|
-    ex03.vm.hostname = "ex03"
-    ex03.vm.network "private_network", ip: "192.168.56.103"
-  end
-
-  config.vm.define "ex04" do |ex04|
-    ex04.vm.hostname = "ex04"
-    ex04.vm.network "private_network", ip: "192.168.56.104"
+  ['ex01', 'ex02', 'ex03', 'ex04'].each_with_index do |name, i|
+    config.vm.define name do |vm|
+      vm.vm.hostname = name
+      vm.vm.network "private_network", ip: "192.168.56.10#{i + 1}"
+      vm.vm.provision "ansible" do |ansible|
+        ansible.playbook = "provisioning/site.yml"
+        ansible.limit = name
+      end
+    end
   end
 end
