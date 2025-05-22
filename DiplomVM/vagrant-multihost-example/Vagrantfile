@@ -1,40 +1,41 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/bookworm64"
 
-# Vagrantfile API/syntax version — не менять
-VAGRANTFILE_API_VERSION = "2"
-
-# Имя проекта — используется в хостнеймах и сетях
-project_name = "multihostexample"
-
-# Основная конфигурация Vagrant
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-
-  # Указываем базовый образ (Ubuntu 15.04)
-  config.vm.box = "wzurowski/vivid32"
-
-  # Список виртуальных машин с их IP
-  {
-    'ex01' => '172.22.22.101', # точка входа
-    'ex02' => '172.22.22.102', # требует ssh-доступа
-    'ex03' => '172.22.22.103', # содержит спрятанный ключ
-    'ex04' => '172.22.22.104', # доступен только по ключу
-  }.each do |app_name, ip_address|
-
-    # Настройка каждой VM по очереди
-    config.vm.define app_name do |node|
-      # Присваиваем хостнейм, чтобы было читаемо
-      node.vm.hostname = app_name + "." + project_name + ".dev"
-
-      # Назначаем приватный IP
-      node.vm.network :private_network, ip: ip_address
-
-      # Если существует файл provisioning/ex01.sh и т.п., подключаем его
-      if File.exist?("provisioning/#{app_name}.sh")
-        node.vm.provision "shell", path: "provisioning/#{app_name}.sh"
-      end
+  config.vm.define "ex01" do |ex01|
+    ex01.vm.hostname = "ex01"
+    ex01.vm.network "private_network", ip: "192.168.10.10"
+    ex01.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/site.yml"
+      ansible.limit = "ex01"
     end
   end
 
-  # Отключены hostmanager и ansible, так как ты используешь Windows
+  config.vm.define "ex02" do |ex02|
+    ex02.vm.hostname = "ex02"
+    ex02.vm.network "private_network", ip: "192.168.10.11"
+    ex02.vm.network "private_network", ip: "192.168.20.10"
+    ex02.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/site.yml"
+      ansible.limit = "ex02"
+    end
+  end
+
+  config.vm.define "ex03" do |ex03|
+    ex03.vm.hostname = "ex03"
+    ex03.vm.network "private_network", ip: "192.168.20.11"
+    ex03.vm.network "private_network", ip: "192.168.30.10"
+    ex03.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/site.yml"
+      ansible.limit = "ex03"
+    end
+  end
+
+  config.vm.define "ex04" do |ex04|
+    ex04.vm.hostname = "ex04"
+    ex04.vm.network "private_network", ip: "192.168.30.11"
+    ex04.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/site.yml"
+      ansible.limit = "ex04"
+    end
+  end
 end

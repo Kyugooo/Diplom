@@ -1,15 +1,63 @@
-- name: Configure server
+---
+- name: Configure Pentest VMs
   hosts: all
-  sudo: True
+  become: yes
   tasks:
-    - name: Install Apache
-      apt: name=apache2 state=present update_cache=yes
-    - name: Example Ansible task
-      debug: msg="Ansible has provisioned that box"
+    - name: Create student user with sudo access
+      user:
+        name: student
+        password: "{{ 'startPentest' | password_hash('sha512') }}"
+        groups: sudo
+        shell: /bin/bash
 
-- name: Configure group01
-  hosts: group01
-  sudo: True
-  tasks:
-    - name: Example Ansible task
-      debug: msg="Example task for group01 for {{ ansible_fqdn }}"
+#    - name: Remove vagrant user
+#      user:
+#        name: vagrant
+#        state: absent
+
+    - name: Set hostname for each machine
+      hostname:
+        name: "{{ inventory_hostname }}"
+
+    - name: Ensure basic tools are installed
+      apt:
+        name:
+          - vim
+          - curl
+          - net-tools
+          - iputils-ping
+          - sudo
+        state: present
+        update_cache: yes
+
+    - name: Copy SSH public key for student user (if exists)
+      authorized_key:
+        user: student
+        state: present
+        key: "{{ lookup('file', 'provisioning/keys/id_rsa_user4.pub') }}"
+      ignore_errors: yes
+
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+
+    - name: Restart SSH to apply changes
+      service:
+        name: ssh
+        state: restarted
+# Time solution
+- name: Enable password authentication in SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication yes'
+    state: present
+
+- name: Restart SSH to apply auth changes
+  service:
+    name: ssh
+    state: restarted
+
