@@ -3,43 +3,21 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "ex01" do |ex01|
     ex01.vm.hostname = "ex01"
-    ex01.vm.network "private_network", ip: "192.168.10.10"
-    ex01.vm.provider "virtualbox"
-    ex01.vm.provision "ansible" do |ansible|
-      ansible.playbook = "provisioning/site.yml"
-      ansible.limit = "ex01"
-    end
+    ex01.vm.network "private_network", ip: "192.168.56.101"
   end
 
   config.vm.define "ex02" do |ex02|
     ex02.vm.hostname = "ex02"
-    ex02.vm.network "private_network", ip: "192.168.10.11"
-    ex02.vm.network "private_network", ip: "192.168.20.10"
-    ex02.vm.provider "virtualbox"
-    ex02.vm.provision "ansible" do |ansible|
-      ansible.playbook = "provisioning/site.yml"
-      ansible.limit = "ex02"
-    end
+    ex02.vm.network "private_network", ip: "192.168.56.102"
   end
 
   config.vm.define "ex03" do |ex03|
     ex03.vm.hostname = "ex03"
-    ex03.vm.network "private_network", ip: "192.168.20.11"
-    ex03.vm.network "private_network", ip: "192.168.30.10"
-    ex03.vm.provider "virtualbox"
-    ex03.vm.provision "ansible" do |ansible|
-      ansible.playbook = "provisioning/site.yml"
-      ansible.limit = "ex03"
-    end
+    ex03.vm.network "private_network", ip: "192.168.56.103"
   end
 
   config.vm.define "ex04" do |ex04|
     ex04.vm.hostname = "ex04"
-    ex04.vm.network "private_network", ip: "192.168.30.11"
-    ex04.vm.provider "virtualbox"
-    ex04.vm.provision "ansible" do |ansible|
-      ansible.playbook = "provisioning/site.yml"
-      ansible.limit = "ex04"
-    end
+    ex04.vm.network "private_network", ip: "192.168.56.104"
   end
 end
